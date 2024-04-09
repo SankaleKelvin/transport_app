@@ -20,3 +20,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::post("/area", [AreasController::class, 'createArea']);
+Route::get("/area", [AreasController::class, 'readAllAreas']);
+Route::get("/area/{id}", [AreasController::class, 'readArea']);
+Route::post("/area/{id}", [AreasController::class, 'updateArea']);
+Route::delete("/area/{id}", [AreasController::class, 'deleteArea']);
