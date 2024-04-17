@@ -8,20 +8,6 @@ use Illuminate\Http\Request;
 class TruckController extends Controller
 {
     
-    public function createTruck(Request $request){
-        $request->validate([
-            "truck_name"=>"required",
-            "driver_id"=>"required"
-        ]);
-
-        $truck = Truck::create([
-            'truck_name'=>$request->truck_name,
-            'driver_id'=>$request->driver_id
-        ]);
-
-        return response()->json($truck);
-    }
-
     public function readAllTrucks(){
         // $trucks = Truck::all();
         $trucks = Truck::join('drivers', 'trucks.driver_id', '=', 'drivers.id')->select('trucks.*', 'drivers.driver_name as driver_name')->get();
@@ -33,9 +19,33 @@ class TruckController extends Controller
         }
     }
 
+    
+    public function createTruck(Request $request){
+        $request->validate([
+            "truck_name"=>"required",
+            "driver_id"=>"required",
+            "image_path"=>"image|mimes:jpeg,png,jpg|max:2048"
+        ]);
+    
+        $filename = null;
+        if($request->hasFile("image_path")){
+            $filename = $request->file("image_path")->store("trucks", "public");
+        }
+    
+        $truck = Truck::create([
+            'truck_name'=>$request->truck_name,
+            'driver_id'=>$request->driver_id,
+            'image_path'=>$filename
+        ]);
+    
+        return response()->json($truck);
+    }
+    
+    
     public function readTruck($id){
         try{
-            $truck = Truck::findOrFail($id);
+            // $truck = Truck::findOrFail($id);
+            $truck = Truck::join("drivers", "trucks.driver_id", "=", "drivers.id")->select("trucks.*", "drivers.driver_name as driver_name")->findOrFail($id);
 
             if($truck){
                 return response()->json($truck);
@@ -51,19 +61,28 @@ class TruckController extends Controller
         }
     }
 
+    
     public function updateTruck($id, Request $request){
         try{
-            $request ->validate([
+            $request->validate([
                 "truck_name"=>"required",
                 "driver_id"=>"required",
+                "image_path"=>"image|mimes:jpeg,png,jpg|max:2048"
             ]);
+    
             $truck = Truck::findOrFail($id);
-
+    
             if($truck){
-                $truck->truck_name = $request->truck_name ;
-                $truck->driver_id = $request->driver_id ; 
+                $truck->truck_name = $request->truck_name;
+                $truck->driver_id = $request->driver_id;
+    
+                if($request->hasFile("image_path")){
+                    $filename = $request->file("image_path")->store("trucks", "public");
+                    $truck->image_path = $filename;
+                }
+    
                 $truck->save();
-
+    
                 return response()->json($truck);
             }
             else{
@@ -73,10 +92,11 @@ class TruckController extends Controller
         catch(\Exception $e){
             return response()->json([
                 'error'=>'Unable to update record!'
-                ], 400);
+            ], 400);
         }
     }
-
+    
+    
     public function deleteTruck($id){
         try{
             $truck = Truck::findOrFail($id);
@@ -94,5 +114,4 @@ class TruckController extends Controller
                 ], 400);
         }
     }
-    
 }

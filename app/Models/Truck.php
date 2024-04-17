@@ -11,6 +11,7 @@ class Truck extends Model
 
     protected $fillable =[
         "truck_name",
-        "driver_id"
+        "driver_id",
+        "image_path"
     ];
 }

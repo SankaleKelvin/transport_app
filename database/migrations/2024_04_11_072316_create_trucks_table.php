@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string("truck_name");
             $table->unsignedBigInteger("driver_id");
             $table->foreign("driver_id")->references("id")->on("drivers");
+
+            $table->string("image_path")->nullable();
             $table->timestamps();
         });
     }
